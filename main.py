@@ -8,8 +8,40 @@ app.config["SECRET_KEY"] = "asdasfasfa"
 
 socketio = SocketIO(app)
 
+rooms = {}
+
+def generate_unique_code(length):
+  while True:
+    code = ""
+    for _ in range(length):
+      code += random.choice(ascii_uppercase)
+      
+    if code not in rooms:
+      break
+    
+    return code
+
 @app.route("/", methods=["POST", "GET"])
 def home():
+  if request.method == "POST":
+    name = request.form.get("name")
+    code = request.form.get("code")
+    join = request.form.get("join", False)
+    create = request.form.get("create", False)
+    
+    if not name:
+      return render_template("home.html", error="Please enter a name.")
+    
+    if join is False and not code:
+      return render_template("home.html", error="Please enter a room code.")
+    
+    room = code
+    if create != False:
+      room = generate_unique_code(4)
+      rooms[room] = {"members": 0, "messages": []}
+    elif code not in rooms:
+      return render_template("home.html", error="Room does not exists.")
+      
   return render_template("home.html")
 
 if __name__ == "__main__":

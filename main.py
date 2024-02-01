@@ -30,17 +30,17 @@ def home():
     create = request.form.get("create", False)
     
     if not name:
-      return render_template("home.html", error="Please enter a name.")
+      return render_template("home.html", error="Please enter a name.", code=code, name=name)
     
     if join is False and not code:
-      return render_template("home.html", error="Please enter a room code.")
+      return render_template("home.html", error="Please enter a room code.", code=code, name=name)
     
     room = code
     if create != False:
       room = generate_unique_code(4)
       rooms[room] = {"members": 0, "messages": []}
     elif code not in rooms:
-      return render_template("home.html", error="Room does not exists.")
+      return render_template("home.html", error="Room does not exists.", code=code, name=name)
       
   return render_template("home.html")
 

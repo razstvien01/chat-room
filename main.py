@@ -19,7 +19,7 @@ def generate_unique_code(length):
     if code not in rooms:
       break
     
-    return code
+  return code
 
 @app.route("/", methods=["POST", "GET"])
 def home():
@@ -52,10 +52,10 @@ def home():
 @app.route("/room")
 def room():
   room = session.get("room")
-  # if room is None or session.get("name") is None or room not in rooms:
-  #   return redirect(url_for("home"))
+  if room is None or session.get("name") is None or room not in rooms:
+    return redirect(url_for("home"))
 
-  return render_template("room.html")
+  return render_template("room.html", code=room)
 
 @socketio.on("connect")
 def connect(auth):
@@ -73,10 +73,26 @@ def connect(auth):
   
   # * puts the user in the socket room
   join_room(room)
-  send({"name": name, "message": "has entered the roon"}, to=room)
+  send({"name": name, "message": "has entered the room"}, to=room)
   rooms[room]["members"] += 1
   print(f"{name} joined room {room}")
-  print("Hello world")
+  
+@socketio.on("disconnect")
+def disconnect():
+  room = session.get("room")
+  name = session.get("name")
+  
+  leave_room(room)
+  
+  if room in rooms:
+    rooms[room]["members"] -= 1
+    # ! delete room if no one's in the room
+    if rooms[room]["members"] <= 0:
+      del rooms[room]
+      
+  send({"name": name, "message": "has left the room"}, to=room)
+  print(f"{name} has left room {room}")
+  
 
 if __name__ == "__main__":
   socketio.run(app, debug=True)

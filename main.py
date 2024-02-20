@@ -55,7 +55,7 @@ def room():
   if room is None or session.get("name") is None or room not in rooms:
     return redirect(url_for("home"))
 
-  return render_template("room.html", code=room)
+  return render_template("room.html", code=room, messages=rooms[room]["messages"])
 
 @socketio.on("connect")
 def connect(auth):
@@ -93,6 +93,19 @@ def disconnect():
   send({"name": name, "message": "has left the room"}, to=room)
   print(f"{name} has left room {room}")
   
+@socketio.on("message")
+def message(data):
+  room = session.get("room")
+  if room not in rooms:
+    return
+  content = {
+    "name": session.get("name"),
+    "message": data["data"]
+  }
+  
+  send(content, to=room)
+  rooms[room]["messages"].append(content)
+  print(f"{session.get('name')} said: {data['data']}")
 
 if __name__ == "__main__":
   socketio.run(app, debug=True)

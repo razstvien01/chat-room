@@ -45,8 +45,6 @@ def home():
       
     session["room"] = room
     session["name"] = name
-    print(f"ROOM: {room}")
-    print(f"NAME: {name}")
     return redirect(url_for("room"))
 
   return render_template("home.html")
@@ -57,7 +55,7 @@ def room():
   if room is None or session.get("name") is None or room not in rooms:
     return redirect(url_for("home"))
 
-  return render_template("room.html")
+  return render_template("room.html", code=room)
 
 @socketio.on("connect")
 def connect(auth):

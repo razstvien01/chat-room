@@ -57,5 +57,26 @@ def room():
 
   return render_template("room.html")
 
+@socketio.on("connect")
+def connect(auth):
+  room = session.get("room")
+  name = session.get("name")
+  
+  #* making surue that they actcually have a room
+  if not room or not name:
+    return
+  
+  #* check if that room exists
+  if room not in rooms:
+    leave_room(room)
+    return
+  
+  # * puts the user in the socket room
+  join_room(room)
+  send({"name": name, "message": "has entered the roon"}, to=room)
+  rooms[room]["members"] += 1
+  print(f"{name} joined room {room}")
+  print("Hello world")
+
 if __name__ == "__main__":
   socketio.run(app, debug=True)
